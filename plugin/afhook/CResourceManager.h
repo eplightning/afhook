@@ -74,7 +74,12 @@ struct ImageInfo {
 	INT32 unknown;
 	INT32 unknown2;
 	INT32 unknown3;
-	INT32 dataSize; // Data size or not, this helps a lot when creating hash
+#ifdef AFHOOK_TE_IMAGE_STRUCT
+	INT32 unknown4;
+	INT32 dataSize;
+#else
+	INT32 dataSize;
+#endif
 };
 
 typedef std::unordered_map<int, std::vector<PackageText*>*> TextLookupMap;
