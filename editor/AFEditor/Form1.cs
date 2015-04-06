@@ -664,5 +664,39 @@ namespace AFEditor
 
             typeof(ComboBox).InvokeMember("RefreshItems", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod, null, comboBox1, new object[] { });
         }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if (selectedImage == null || selectedImage.replacementLen <= 0)
+            {
+                return;
+            }
+
+            DialogResult res = saveFileDialog3.ShowDialog();
+
+            if (res != DialogResult.OK)
+            {
+                return;
+            }
+
+            Bitmap bm = new Bitmap(selectedImage.width, selectedImage.height);
+
+            CBitReader cr = new CBitReader(selectedImage.replacement);
+
+            switch (selectedImage.flags & 0xFF)
+            {
+                case 2:
+                    CR6Ti.DecodeOpaque1(cr, bm, selectedImage.width, selectedImage.height, selectedImage.depth);
+                    break;
+
+                case 3:
+                    CR6Ti.DecodeTransparent(cr, bm, selectedImage.width, selectedImage.height, selectedImage.depth);
+                    break;
+            }
+
+            bm.Save(saveFileDialog3.FileName);
+
+            bm.Dispose();
+        }
     }
 }

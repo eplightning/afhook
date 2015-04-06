@@ -113,7 +113,7 @@ namespace AFEditor
                     // ALPHA CHANNEL STUFF
                     if (--alphaRepetition < 0)
                     {
-                        ta = (int) Math.Round(bitmap.GetPixel(x, y).A * 0.125, 0);
+                        ta = (int)Math.Round(bitmap.GetPixel(x, y).A * 0.125, 0);
                         ta -= (int)Math.Round(color.A * 0.125, 0);
                         a = FixAlpha(bitmap.GetPixel(x, y).A);
                         color = Color.FromArgb(a, color.R, color.G, color.B);
@@ -125,7 +125,7 @@ namespace AFEditor
                             n = 0;
                             tempa = 0;
 
-                            widthBuffer[x++] = Color.FromArgb(0, 0, 0, 0); 
+                            widthBuffer[x++] = Color.FromArgb(0, 0, 0, 0);
 
                             while (x < width)
                             {
@@ -137,7 +137,7 @@ namespace AFEditor
                                 }
 
                                 n++;
-                                widthBuffer[x++] = Color.FromArgb(0, 0, 0, 0); 
+                                widthBuffer[x++] = Color.FromArgb(0, 0, 0, 0);
                             }
 
                             writer.Write((UInt16)n);
@@ -183,6 +183,7 @@ namespace AFEditor
                         else
                         {
                             frameRepetition = FindNextRepetition2(bitmap, x, y, width, ref count);
+
                             writer.Write((UInt16)frameRepetition);
                         }
                     }
@@ -234,7 +235,7 @@ namespace AFEditor
 
         static private int FixAlpha(int alpha)
         {
-            alpha = (int) Math.Round(alpha * 0.125, 0);
+            alpha = (int)Math.Round(alpha * 0.125, 0);
             alpha *= 8;
 
             if (alpha >= 256) alpha = 255;
@@ -260,7 +261,7 @@ namespace AFEditor
 
             t -= g;
 
-            dg = (int) ((next.G - color.G) / 2);
+            dg = (int)((next.G - color.G) / 2);
 
             if (dg < -128) dg = -128;
             if (dg > 127) dg = 127;
@@ -293,7 +294,7 @@ namespace AFEditor
             if (r < 0) r = 0;
             if (b < 0) b = 0;
 
-            writer.Write((sbyte)(dg - (t/2)));
+            writer.Write((sbyte)(dg - (t / 2)));
             writer.Write((sbyte)db2);
             writer.Write((sbyte)dr2);
 
@@ -395,7 +396,7 @@ namespace AFEditor
                 }
             }
 
-            return (UInt16) (ourX - x - 1);
+            return (UInt16)(ourX - x - 1);
         }
 
         /**
@@ -406,6 +407,7 @@ namespace AFEditor
             Color previous;
             Color current;
             int ourX = x;
+            bool transparent = false;
 
             if ((x + 1) == width)
             {
@@ -417,10 +419,13 @@ namespace AFEditor
             {
                 previous = bitmap.GetPixel(ourX, y);
                 current = bitmap.GetPixel(++ourX, y);
+
+                transparent = (previous.A == 0);
+
                 previous = Color.FromArgb(0, previous.R, previous.G, previous.B);
                 current = Color.FromArgb(0, current.R, current.G, current.B);
             }
-            while (ourX < (width - 1) && (ourX - x) < 65535 && previous != current);
+            while (transparent && ourX < (width - 1) && (ourX - x) < 65535 && previous != current);
 
             if (previous != current)
             {
@@ -455,203 +460,203 @@ namespace AFEditor
 
         // Now this is basically 99% copied from alterdec
 
-        static public void DecodeOpaque1( CBitReader s, Bitmap image, int width, int height, int depth)
+        static public void DecodeOpaque1(CBitReader s, Bitmap image, int width, int height, int depth)
         {
             int[] pr = new int[width];
             int[] pg = new int[width];
             int[] pb = new int[width];
-	
-	        for ( int y=0; y<height; y++ )
-	        {
-		        int		count = -1;
-		        int 	r, g, b;
-		        int		dr, dg, db;
 
-		        r = g = b = 0;
-		        dr = dg = db = 0;
+            for (int y = 0; y < height; y++)
+            {
+                int count = -1;
+                int r, g, b;
+                int dr, dg, db;
 
-		        for ( int x=0; x<width; )
-		        {
-			        if ( count == -1 )
-				        count = (int) s.ReadUnsigned();
+                r = g = b = 0;
+                dr = dg = db = 0;
 
-			        if ( s.ReadBit() == 1 )
-			        {
-				        r=pr[x]; g=pg[x]; b=pb[x];
-				        dr = dg = db = 0;
-			        }
-			        else
-			        {
-				        int t = g + dg*2;
-				        if ( t > 255 )  t = 255;
-				        if ( t < 0 )  t = 0;
-				        t -= g;
+                for (int x = 0; x < width; )
+                {
+                    if (count == -1)
+                        count = (int)s.ReadUnsigned();
 
-				        dg = s.ReadSigned();
+                    if (s.ReadBit() == 1)
+                    {
+                        r = pr[x]; g = pg[x]; b = pb[x];
+                        dr = dg = db = 0;
+                    }
+                    else
+                    {
+                        int t = g + dg * 2;
+                        if (t > 255) t = 255;
+                        if (t < 0) t = 0;
+                        t -= g;
 
-				        dg += t/2;
-				        if ( dg < -128 )  dg = -128;
-				        if ( dg > 127 )  dg = 127;
+                        dg = s.ReadSigned();
 
-				        db = dr = dg;
-				        r += dr * 2;
-				        g += dg * 2;
-				        b += db * 2;
-				
-				        if ( r > 255 )  r = 255;
-				        if ( g > 255 )  g = 255;
-				        if ( b > 255 )  b = 255;
-				        if ( r < 0 )  r = 0;
-				        if ( g < 0 )  g = 0;
-				        if ( b < 0 )  b = 0;
+                        dg += t / 2;
+                        if (dg < -128) dg = -128;
+                        if (dg > 127) dg = 127;
 
-				        r += s.ReadSigned() * 2;
-				        if ( r > 255 )  r = 255;
-				        if ( r < 0 )  r = 0;
+                        db = dr = dg;
+                        r += dr * 2;
+                        g += dg * 2;
+                        b += db * 2;
 
-				        b += s.ReadSigned() * 2;
-				        if ( b > 255 )  b = 255;
-				        if ( b < 0 )  b = 0;
-			        }
+                        if (r > 255) r = 255;
+                        if (g > 255) g = 255;
+                        if (b > 255) b = 255;
+                        if (r < 0) r = 0;
+                        if (g < 0) g = 0;
+                        if (b < 0) b = 0;
 
-			        pr[x]=r; pg[x]=g; pb[x]=b;
+                        r += s.ReadSigned() * 2;
+                        if (r > 255) r = 255;
+                        if (r < 0) r = 0;
+
+                        b += s.ReadSigned() * 2;
+                        if (b > 255) b = 255;
+                        if (b < 0) b = 0;
+                    }
+
+                    pr[x] = r; pg[x] = g; pb[x] = b;
                     image.SetPixel(x++, y, Color.FromArgb(b, g, r));
 
-			        if ( count-- == 0  &&  x < width )
-			        {
-				        int n = (int) s.ReadUnsigned() + 1;
+                    if (count-- == 0 && x < width)
+                    {
+                        int n = (int)s.ReadUnsigned() + 1;
 
-				        for ( int i=0; i<n; i++ )
-				        {
-					        pr[x]=r; pg[x]=g; pb[x]=b;
-					        image.SetPixel(x++, y, Color.FromArgb(b, g, r));
-				        }
+                        for (int i = 0; i < n; i++)
+                        {
+                            pr[x] = r; pg[x] = g; pb[x] = b;
+                            image.SetPixel(x++, y, Color.FromArgb(b, g, r));
+                        }
 
-				        dr = dg = db = 0;
-			        }
-		        }
-	        }
+                        dr = dg = db = 0;
+                    }
+                }
+            }
         }
 
-        static public void DecodeTransparent( CBitReader s, Bitmap image, int width, int height, int depth)
+        static public void DecodeTransparent(CBitReader s, Bitmap image, int width, int height, int depth)
         {
             int[] pr = new int[width];
             int[] pg = new int[width];
             int[] pb = new int[width];
             int[] pa = new int[width];
 
-	        for ( int y=0; y<height; y++ )
-	        {
-		        int		r = 0;
-		        int		g = 0;
-		        int		b = 0;
-		        int		a = 0;
-		        int		dg = 0;
-		        int		ta = 0;
-		        bool	f = true;
-		        int		samea = 0;
-		        int		samef = 0;
+            for (int y = 0; y < height; y++)
+            {
+                int r = 0;
+                int g = 0;
+                int b = 0;
+                int a = 0;
+                int dg = 0;
+                int ta = 0;
+                bool f = true;
+                int samea = 0;
+                int samef = 0;
 
-		        for ( int x=0; x<width; )
-		        {
-			        if ( --samea < 0 )
-			        {
-				        ta += s.ReadSigned();
+                for (int x = 0; x < width; )
+                {
+                    if (--samea < 0)
+                    {
+                        ta += s.ReadSigned();
 
-				        if ( ta == 0 )
-				        {
-					        int n = (int) s.ReadUnsigned();
+                        if (ta == 0)
+                        {
+                            int n = (int)s.ReadUnsigned();
                             for (int i = 0; i < n + 1; i++)
                             {
                                 pr[x] = 0; pg[x] = 0; pb[x] = 0; pa[x] = 0;
                                 image.SetPixel(x++, y, Color.FromArgb(0, 0, 0, 0));
                             }
-					        continue;
-				        }
+                            continue;
+                        }
 
-				        if ( ta == 32 )
-					        samea = (int) s.ReadUnsigned();
+                        if (ta == 32)
+                            samea = (int)s.ReadUnsigned();
 
-				        a = ta * 8;
-				        if ( a >= 256 )
-					        a = 255;
-			        }
+                        a = ta * 8;
+                        if (a >= 256)
+                            a = 255;
+                    }
 
-			        if ( --samef < 0 )
-			        {
-				        f = f ? false : true;
+                    if (--samef < 0)
+                    {
+                        f = f ? false : true;
 
-				        samef = (int) s.ReadUnsigned();
+                        samef = (int)s.ReadUnsigned();
 
-				        dg = 0;
-			        }
-			
-			        if ( f )
-			        {
-				        if ( samea < samef )
-				        {
-					        pr[x]=r; pg[x]=g; pb[x]=b; pa[x]=a;
+                        dg = 0;
+                    }
+
+                    if (f)
+                    {
+                        if (samea < samef)
+                        {
+                            pr[x] = r; pg[x] = g; pb[x] = b; pa[x] = a;
                             image.SetPixel(x++, y, Color.FromArgb(a, b, g, r));
-				        }
-				        else
-				        {
-					        if ( samef > 0 )
-						        samea -= samef;
+                        }
+                        else
+                        {
+                            if (samef > 0)
+                                samea -= samef;
 
                             for (int i = 0; i < samef + 1; i++)
                             {
                                 pr[x] = r; pg[x] = g; pb[x] = b; pa[x] = a;
                                 image.SetPixel(x++, y, Color.FromArgb(a, b, g, r));
                             }
-					        samef = 0;
-				        }
-			        }
-			        else
-			        {
-				        if ( s.ReadBit() == 1 )
-				        {
-					        r=pr[x]; g=pg[x]; b=pb[x];
-					        pa[x] = a;
+                            samef = 0;
+                        }
+                    }
+                    else
+                    {
+                        if (s.ReadBit() == 1)
+                        {
+                            r = pr[x]; g = pg[x]; b = pb[x];
+                            pa[x] = a;
                             image.SetPixel(x++, y, Color.FromArgb(a, b, g, r));
-					        dg = 0;
-				        }
-				        else
-				        {
-					        int tg = g + dg*2;
-					        if ( tg < 0 )  tg = 0;
-					        if ( tg > 255 )  tg = 255;
-					        tg -= g;
-					        if ( tg < -128 )  tg += 256;
-					        if ( tg > 127 )  tg -= 256;
+                            dg = 0;
+                        }
+                        else
+                        {
+                            int tg = g + dg * 2;
+                            if (tg < 0) tg = 0;
+                            if (tg > 255) tg = 255;
+                            tg -= g;
+                            if (tg < -128) tg += 256;
+                            if (tg > 127) tg -= 256;
 
-					        dg = tg/2 + s.ReadSigned();
-					        if ( dg < -128 )  dg = -128;
-					        if ( dg > 127 )  dg = 127;
+                            dg = tg / 2 + s.ReadSigned();
+                            if (dg < -128) dg = -128;
+                            if (dg > 127) dg = 127;
 
-					        r += dg*2;
-					        g += dg*2;
-					        b += dg*2;
+                            r += dg * 2;
+                            g += dg * 2;
+                            b += dg * 2;
 
-					        r += s.ReadSigned() * 2;
-					        b += s.ReadSigned() * 2;
+                            r += s.ReadSigned() * 2;
+                            b += s.ReadSigned() * 2;
 
-					        if ( r > 255 )  r = 255;
-					        if ( g > 255 )  g = 255;
-					        if ( b > 255 )  b = 255;
-					        if ( r < 0 )  r = 0;
-					        if ( g < 0 )  g = 0;
-					        if ( b < 0 )  b = 0;
-					
-					        r &= 0xfe;
-					        g &= 0xfe;
-					        b &= 0xfe;
+                            if (r > 255) r = 255;
+                            if (g > 255) g = 255;
+                            if (b > 255) b = 255;
+                            if (r < 0) r = 0;
+                            if (g < 0) g = 0;
+                            if (b < 0) b = 0;
 
-					        pr[x]=r; pg[x]=g; pb[x]=b; pa[x]=a;
+                            r &= 0xfe;
+                            g &= 0xfe;
+                            b &= 0xfe;
+
+                            pr[x] = r; pg[x] = g; pb[x] = b; pa[x] = a;
                             image.SetPixel(x++, y, Color.FromArgb(a, b, g, r));
-				        }
-			        }
-		        }
-	        }
+                        }
+                    }
+                }
+            }
         }
     }
 }
