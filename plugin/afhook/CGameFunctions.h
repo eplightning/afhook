@@ -21,11 +21,15 @@ public:
 	// <Altered Fable; Chronicles 01)
 	static void __fastcall HandleText5(void* thisPointer, void* junk, const char* text, void* p1, void* p2, void* p3, void* p4, void* p5);
 
+	// Older
+	static void __fastcall HandleText3(void* thisPointer, void* junk, const char* text, void* p1, void* p2, void* p3);
+
 	// rUGP real functions
 	static void* (__stdcall* Orig_HandleCharacterColor) (void*, const char*);
 	static void (__fastcall* Orig_HandleText7) (void*, void*, const char*, void*, void*, void*, void*, void*, void*, void*);
 	static void (__fastcall* Orig_HandleText6) (void*, void*, const char*, void*, void*, void*, void*, void*, void*);
 	static void (__fastcall* Orig_HandleText5) (void*, void*, const char*, void*, void*, void*, void*, void*);
+	static void (__fastcall* Orig_HandleText3) (void*, void*, const char*, void*, void*, void*);
 	static void* (__cdecl* Orig_DecodeR6TiOpaque1) (void*, ImageInfo*, INT32, INT32, INT32, ImageDimensions);
 	static void* (__cdecl* Orig_DecodeR6TiTransparent) (void*, ImageInfo*, INT32, INT32, INT32, INT32, INT32, INT32, INT32);
 

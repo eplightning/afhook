@@ -72,6 +72,10 @@ BOOL CHookEngine::HookGame()
 			m_logger->WriteLine("Pattern finder found location of rUGP 5.8 HandleText function: ").WritePointer(handleText.address);
 			break;
 
+		case 4:
+			m_logger->WriteLine("Pattern finder found location of legacy rUGP HandleText function: ").WritePointer(handleText.address);
+			break;
+
 		case 0:
 			m_logger->WriteLine("Pattern finder was unable to find location of HandleText function");
 	}
@@ -95,7 +99,17 @@ BOOL CHookEngine::HookGame()
 		}
 		else
 		{
-			m_logger->WriteLine("Pattern finder was unable to find location of GetCharacterName function");
+			byte patternCharName3[] = { 0x6A, 0xFF, 0x68, 0x00, 0x00, 0x00, 0x00, 0x64, 0xA1, 0x00, 0x00, 0x00, 0x00, 0x50, 0x64, 0x89, 0x25, 0x00, 0x00, 0x00, 0x00, 0x83, 0xEC, 0x08, 0x53, 0x55, 0x56, 0x33, 0xED, 0x57, 0x8D };
+			ptrCharName = this->FindMemoryPattern("xxx????xxxxxxxxxxxxxxxxxxxxxxxx", patternCharName3, ((UINT_PTR) hmoduleVm60 + 0x10700), 0x3000);
+
+			if (ptrCharName != 0)
+			{
+				m_logger->WriteLine("Pattern finder found location of GetCharacterName function: ").WritePointer(ptrCharName);
+			}
+			else
+			{
+				m_logger->WriteLine("Pattern finder was unable to find location of GetCharacterName function");
+			}
 		}
 	}
 
@@ -117,6 +131,17 @@ BOOL CHookEngine::HookGame()
 
 		case 5:
 			DetourAttach(&(PVOID&) handleText.address, CGameFunctions::HandleText5);
+			break;
+
+		case 3:
+			DetourAttach(&(PVOID&) handleText.address, CGameFunctions::HandleText3);
+	}
+
+	// TODO: fix images for old rUGP
+	if (handleText.version == 3)
+	{
+		ptrTexture1 = 0;
+		ptrTexture2 = 0;
 	}
 
 	if (ptrCharName != 0) DetourAttach(&(PVOID&) ptrCharName, CGameFunctions::HandleCharacterColor);
@@ -138,6 +163,7 @@ BOOL CHookEngine::HookGame()
 	CGameFunctions::Orig_HandleText7 = (void (__fastcall*) (void*, void*, const char*, void*, void*, void*, void*, void*, void*, void*)) handleText.address;
 	CGameFunctions::Orig_HandleText6 = (void (__fastcall*) (void*, void*, const char*, void*, void*, void*, void*, void*, void*)) handleText.address;
 	CGameFunctions::Orig_HandleText5 = (void (__fastcall*) (void*, void*, const char*, void*, void*, void*, void*, void*)) handleText.address;
+	CGameFunctions::Orig_HandleText3 = (void (__fastcall*) (void*, void*, const char*, void*, void*, void*)) handleText.address;
 	CGameFunctions::Orig_HandleCharacterColor = (void* (__stdcall*) (void*, const char*)) ptrCharName;
 	CGameFunctions::Orig_DecodeR6TiOpaque1 = (void* (__cdecl*) (void*, ImageInfo*, INT32, INT32, INT32, ImageDimensions)) ptrTexture1;
 	CGameFunctions::Orig_DecodeR6TiTransparent = (void* (__cdecl*) (void*, ImageInfo*, INT32, INT32, INT32, INT32, INT32, INT32, INT32)) ptrTexture2;
@@ -154,6 +180,7 @@ BOOL CHookEngine::UnhookGame()
 	if (CGameFunctions::Orig_HandleText7 != 0) DetourDetach(&(PVOID&) CGameFunctions::Orig_HandleText7, CGameFunctions::HandleText7);
 	if (CGameFunctions::Orig_HandleText6 != 0) DetourDetach(&(PVOID&) CGameFunctions::Orig_HandleText6, CGameFunctions::HandleText6);
 	if (CGameFunctions::Orig_HandleText5 != 0) DetourDetach(&(PVOID&) CGameFunctions::Orig_HandleText5, CGameFunctions::HandleText5);
+	if (CGameFunctions::Orig_HandleText3 != 0) DetourDetach(&(PVOID&) CGameFunctions::Orig_HandleText3, CGameFunctions::HandleText3);
 	if (CGameFunctions::Orig_HandleCharacterColor != 0) DetourDetach(&(PVOID&) CGameFunctions::Orig_HandleCharacterColor, CGameFunctions::HandleCharacterColor);
 	if (CGameFunctions::Orig_DecodeR6TiOpaque1 != 0) DetourDetach(&(PVOID&) CGameFunctions::Orig_DecodeR6TiOpaque1, CGameFunctions::DecodeR6TiOpaque1);
 	if (CGameFunctions::Orig_DecodeR6TiTransparent != 0) DetourDetach(&(PVOID&) CGameFunctions::Orig_DecodeR6TiTransparent, CGameFunctions::DecodeR6TiTransparent);
@@ -199,6 +226,13 @@ HookInfo CHookEngine::FindHandleText(UINT_PTR module)
 	out.version = 5;
 	byte patternText4[] = { 0x6A, 0xFF, 0x68, 0x00, 0x00, 0x00, 0x00, 0x64, 0xA1, 0x00, 0x00, 0x00, 0x00, 0x50, 0x64, 0x89, 0x25, 0x00, 0x00, 0x00, 0x00, 0x83, 0xEC, 0x08, 0x53, 0x55, 0x56, 0x57, 0x8B, 0xF1, 0x33, 0xC0, 0xC7 };
 	out.address = this->FindMemoryPattern("xxx????xxxxxxxxxxxxxxxxxxxxxxxxxx", patternText4, (module + 0x10000), 0x30000);
+
+	if (out.address) return out;
+
+	// Legacy rUGP
+	out.version = 3;
+	byte patternText5[] = { 0x64, 0xA1, 0x00, 0x00, 0x00, 0x00, 0x6A, 0xFF, 0x68, 0x00, 0x00, 0x00, 0x00, 0x50, 0x64, 0x89, 0x25, 0x00, 0x00, 0x00, 0x00, 0x83, 0xEC, 0x08, 0x53, 0x55, 0x56, 0x57, 0x8B, 0x7C, 0x24, 0x28, 0x8B, 0xF1, 0x57, 0x8D, 0x4E };
+	out.address = this->FindMemoryPattern("xxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxx", patternText5, (module + 0x10000), 0x30000);
 
 	if (!out.address) out.version = 0;
 

@@ -91,6 +91,7 @@ public:
 	CResourceManager();
 	~CResourceManager();
 	void SetLogger(CLogger* logger) { m_logger = logger; };
+	CLogger *GetLogger() { return m_logger; };
 	void LoadPackage(const std::wstring& filename);
 	void LoadPackage(const char* filename);
 	void SavePackage(const std::wstring& filename);

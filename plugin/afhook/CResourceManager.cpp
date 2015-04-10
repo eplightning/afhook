@@ -96,7 +96,7 @@ bool CResourceManager::TranslateText(const char* original, char* buffer, int buf
 
 		vec->push_back(data);
 
-		m_fastTextLookup.emplace(originalLen, vec);
+		m_fastTextLookup.emplace(std::make_pair<int, std::vector<PackageText*>*>(originalLen, vec));
 	}
 
 	return false;
@@ -173,7 +173,7 @@ unsigned char* CResourceManager::TranslateImage(const char* hash, void* imageDat
 
 	img->hash[40] = img->title[40] = '\x00';
 
-	m_imageDatabase.emplace(img->hash, img);
+	m_imageDatabase.emplace(std::make_pair<const char*, PackageImage*>(img->hash, img));
 
 #ifdef AFHOOK_DEVMODE
 
@@ -400,7 +400,7 @@ void CResourceManager::LoadPackage(const std::wstring& filename)
 
 			vec->push_back(it->second);
 
-			m_fastTextLookup.emplace(it->second->sourceLen, vec);
+			m_fastTextLookup.emplace(std::make_pair<int, std::vector<PackageText*>*>(it->second->sourceLen, vec));
 		}
 	}
 
