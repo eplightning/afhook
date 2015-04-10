@@ -72,7 +72,7 @@ BOOL CHookEngine::HookGame()
 			m_logger->WriteLine("Pattern finder found location of rUGP 5.8 HandleText function: ").WritePointer(handleText.address);
 			break;
 
-		case 4:
+		case 3:
 			m_logger->WriteLine("Pattern finder found location of legacy rUGP HandleText function: ").WritePointer(handleText.address);
 			break;
 
